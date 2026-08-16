@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quiz: Energieumsatz und BMI</title>
+  <style>
+    :root {
+      --blue: #2c6680;
+      --blue-dark: #17465c;
+      --blue-light: #e6f2f5;
+      --amber: #dfa33a;
+      --amber-light: #fff4dd;
+      --ink: #223038;
+      --muted: #617079;
+      --line: #d7e0e4;
+      --paper: #ffffff;
+      --background: #f1f5f6;
+      --correct: #27834d;
+      --wrong: #c2473d;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 8%, #dcecef 0 11%, transparent 12%),
+        radial-gradient(circle at 95% 88%, #f7e8c7 0 10%, transparent 11%),
+        var(--background);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .page-header {
+      padding: 26px max(22px, calc((100vw - 1180px) / 2));
+      color: white;
+      background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+      box-shadow: 0 3px 14px rgba(23, 70, 92, 0.18);
+    }
+
+    .page-header h1 {
+      margin: 0 0 7px;
+      font-size: clamp(1.65rem, 4vw, 2.35rem);
+    }
+
+    .page-header p {
+      max-width: 760px;
+      margin: 0;
+      color: #dfeef3;
+      line-height: 1.45;
+    }
+
+    .progress-wrap {
+      height: 8px;
+      background: #d7e2e6;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0;
+      background: var(--amber);
+      transition: width 0.35s ease;
+    }
+
+    .layout {
+      width: min(1180px, calc(100% - 32px));
+      margin: 28px auto 44px;
+      display: grid;
+      grid-template-columns: minmax(300px, 0.92fr) minmax(440px, 1.45fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .case-card {
+      position: sticky;
+      top: 18px;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: var(--paper);
+      box-shadow: 0 12px 32px rgba(34, 48, 56, 0.1);
+    }
+
+    .case-title {
+      padding: 20px 22px 17px;
+      background: linear-gradient(135deg, var(--amber-light), white);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .case-title span {
+      display: block;
+      margin-bottom: 4px;
+      color: #8c631e;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .case-title h2 { margin: 0; color: var(--blue-dark); }
+
+    .case-content {
+      padding: 20px 22px 22px;
+      line-height: 1.48;
+    }
+
+    .case-content p { margin: 0 0 16px; }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin: 17px 0;
+    }
+
+    .data-item {
+      padding: 11px 12px;
+      border-radius: 10px;
+      background: var(--blue-light);
+    }
+
+    .data-item span {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--muted);
+      font-size: 0.76rem;
+    }
+
+    .data-item strong {
+      color: var(--blue-dark);
+      font-size: 1rem;
+    }
+
+    .note {
+      padding: 13px 14px;
+      border-left: 4px solid var(--amber);
+      border-radius: 8px;
+      background: var(--amber-light);
+      font-size: 0.91rem;
+    }
+
+    .formula-box {
+      margin-top: 17px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #f8fafb;
+      font-size: 0.88rem;
+    }
+
+    .formula-box strong { display: block; margin-bottom: 6px; }
+    .formula-box div + div { margin-top: 5px; }
+
+    .sources {
+      margin-top: 18px;
+      padding-top: 15px;
+      border-top: 1px solid var(--line);
+    }
+
+    .sources strong { display: block; margin-bottom: 8px; }
+
+    .sources a {
+      display: block;
+      margin-top: 7px;
+      color: var(--blue-dark);
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+
+    .quiz-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: var(--paper);
+      box-shadow: 0 12px 32px rgba(34, 48, 56, 0.1);
+    }
+
+    .quiz-main { padding: 27px 30px 30px; }
+
+    .meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    .question {
+      min-height: 62px;
+      margin: 0 0 20px;
+      font-size: clamp(1.18rem, 3vw, 1.5rem);
+      line-height: 1.38;
+    }
+
+    .answers {
+      display: grid;
+      gap: 11px;
+    }
+
+    .answer {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--line);
+      border-radius: 11px;
+      color: var(--ink);
+      background: white;
+      text-align: left;
+      font: inherit;
+      line-height: 1.4;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, transform 0.15s;
+    }
+
+    .answer:hover:not(:disabled),
+    .answer:focus-visible:not(:disabled) {
+      border-color: var(--blue);
+      background: var(--blue-light);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .answer.correct {
+      border-color: var(--correct);
+      background: #e6f5ec;
+    }
+
+    .answer.wrong {
+      border-color: var(--wrong);
+      background: #fdebea;
+    }
+
+    .number-area {
+      display: none;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #f7fafb;
+    }
+
+    .number-area.show { display: block; }
+
+    .number-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .number-row input {
+      min-width: 0;
+      flex: 1;
+      padding: 13px 14px;
+      border: 2px solid #bfcbd0;
+      border-radius: 9px;
+      color: var(--ink);
+      background: white;
+      font: inherit;
+      font-size: 1.05rem;
+    }
+
+    .number-row input:focus {
+      border-color: var(--blue);
+      outline: none;
+    }
+
+    .unit {
+      min-width: 45px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .helper-link {
+      display: none;
+      margin: 0 0 13px;
+      color: var(--blue-dark);
+      font-weight: 700;
+    }
+
+    .helper-link.show { display: inline-block; }
+
+    .check-number,
+    .next,
+    .restart {
+      padding: 12px 19px;
+      border: 0;
+      border-radius: 10px;
+      color: white;
+      background: var(--blue-dark);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .check-number { margin-top: 13px; }
+
+    .feedback {
+      display: none;
+      margin-top: 19px;
+      padding: 15px 17px;
+      border-left: 5px solid var(--amber);
+      border-radius: 8px;
+      background: #f6f8f8;
+      line-height: 1.48;
+    }
+
+    .feedback.show { display: block; }
+    .feedback strong { display: block; margin-bottom: 3px; }
+
+    .next {
+      display: none;
+      margin: 20px 0 0 auto;
+    }
+
+    .next.show { display: block; }
+
+    .result {
+      display: none;
+      padding: 10px 0;
+      text-align: center;
+    }
+
+    .result.show { display: block; }
+
+    .score-circle {
+      width: 150px;
+      height: 150px;
+      display: grid;
+      place-items: center;
+      margin: 4px auto 23px;
+      border: 11px solid var(--blue-light);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      color: var(--blue-dark);
+      font-size: 2rem;
+      font-weight: 800;
+    }
+
+    .result h2 { margin: 0 0 9px; }
+    .result p { color: var(--muted); line-height: 1.5; }
+    .restart { margin-top: 18px; }
+
+    @media (max-width: 850px) {
+      .layout {
+        grid-template-columns: 1fr;
+        width: min(720px, calc(100% - 24px));
+        margin-top: 16px;
+      }
+
+      .case-card {
+        top: 0;
+        z-index: 5;
+        max-height: 45vh;
+        border-radius: 0 0 15px 15px;
+      }
+
+      .case-title { padding: 14px 18px 11px; }
+      .case-content { padding: 14px 18px 17px; }
+    }
+
+    @media (max-width: 520px) {
+      .page-header { padding: 21px 18px; }
+      .quiz-main { padding: 23px 20px 25px; }
+      .data-grid { grid-template-columns: 1fr 1fr; }
+      .meta { font-size: 0.85rem; }
+      .number-row { align-items: stretch; }
+      .unit { display: flex; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="page-header">
+    <h1>Quiz: Energieumsatz und BMI</h1>
+    <p>Bearbeite die Fragen zur Fallsituation. Die Angaben zu Frau Hakle bleiben während des gesamten Quiz sichtbar.</p>
+  </header>
+  <div class="progress-wrap" aria-hidden="true">
+    <div class="progress" id="progress"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="case-card" aria-labelledby="case-heading">
+      <div class="case-title">
+        <span>Fallsituation</span>
+        <h2 id="case-heading">Frau Hakle</h2>
+      </div>
+      <div class="case-content">
+        <p>Frau Hakle ist 43 Jahre alt und arbeitet in einem Büro. Sie sitzt einen grossen Teil des Arbeitstages. Im Alltag geht sie kurze Strecken zu Fuss und erledigt den Haushalt, treibt aber nur selten Sport.</p>
+        <p>Auch in völliger Ruhe benötigt ihr Körper Energie, beispielsweise für Atmung, Herzschlag und Körpertemperatur. Durch Arbeit, Gehen, Hausarbeit und andere Aktivitäten kommt zusätzlicher Energieverbrauch hinzu.</p>
+
+        <div class="data-grid" aria-label="Falldaten">
+          <div class="data-item"><span>Alter</span><strong>43 Jahre</strong></div>
+          <div class="data-item"><span>Körpergrösse</span><strong>1,67 m</strong></div>
+          <div class="data-item"><span>Körpergewicht</span><strong>82 kg</strong></div>
+          <div class="data-item"><span>Grundumsatz</span><strong>ca. 1’550 kcal</strong></div>
+          <div class="data-item"><span>Leistungsumsatz</span><strong>ca. 700 kcal</strong></div>
+          <div class="data-item"><span>Energieaufnahme</span><strong>ca. 2’500 kcal</strong></div>
+        </div>
+
+        <div class="note">Die Angaben zum Energieverbrauch sind Schätzwerte für einen typischen Tag und dienen als Grundlage für die Aufgaben.</div>
+
+        <div class="formula-box">
+          <strong>Rechenhilfe</strong>
+          <div>Gesamtumsatz = Grundumsatz + Leistungsumsatz</div>
+          <div>Energiebilanz = Energieaufnahme − Gesamtumsatz</div>
+          <div>BMI = Gewicht in kg ÷ (Grösse in m)²</div>
+        </div>
+
+        <div class="sources">
+          <strong>Quellen und Hilfsmittel</strong>
+          <a href="https://www.usz.ch/bmi-rechner/" target="_blank" rel="noreferrer">BMI-Rechner des Universitätsspitals Zürich</a>
+          <a href="https://www.youtube.com/watch?v=01aYrnXC4OI" target="_blank" rel="noreferrer">Video: Wie viel Energie braucht unser Körper?</a>
+        </div>
+      </div>
+    </aside>
+
+    <section class="quiz-card" aria-labelledby="question">
+      <main class="quiz-main">
+        <div id="question-area">
+          <div class="meta">
+            <span id="counter"></span>
+            <span id="points"></span>
+          </div>
+          <h2 class="question" id="question"></h2>
+          <a class="helper-link" id="helper-link" href="https://www.usz.ch/bmi-rechner/" target="_blank" rel="noreferrer">USZ-BMI-Rechner in einem neuen Fenster öffnen</a>
+          <div class="answers" id="answers"></div>
+          <div class="number-area" id="number-area">
+            <div class="number-row">
+              <input id="number-input" type="text" inputmode="decimal" autocomplete="off" aria-label="Berechnetes Ergebnis">
+              <span class="unit" id="unit"></span>
+            </div>
+            <button class="check-number" id="check-number" type="button">Antwort prüfen</button>
+          </div>
+          <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+          <button class="next" id="next" type="button">Nächste Frage</button>
+        </div>
+
+        <div class="result" id="result">
+          <div class="score-circle" id="final-score"></div>
+          <h2 id="result-title"></h2>
+          <p id="result-text"></p>
+          <button class="restart" id="restart" type="button">Quiz wiederholen</button>
+        </div>
+      </main>
+    </section>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        type: "choice",
+        question: "Was beschreibt der Grundumsatz von Frau Hakle?",
+        answers: [
+          "Die Energie, die ihr Körper in völliger Ruhe während 24 Stunden benötigt.",
+          "Nur die Energie, die sie beim Sport verbraucht.",
+          "Die Energie, die sie mit der Nahrung aufnimmt.",
+          "Nur den Energieverbrauch während der Arbeitszeit."
+        ],
+        correct: 0,
+        explanation: "Der Grundumsatz deckt den Energiebedarf für lebenswichtige Vorgänge in Ruhe während 24 Stunden."
+      },
+      {
+        type: "choice",
+        question: "Welche Vorgänge gehören zum Grundumsatz?",
+        answers: [
+          "Atmung, Herzschlag und Aufrechterhaltung der Körpertemperatur",
+          "Joggen, Velofahren und Schwimmen",
+          "Einkaufen, Kochen und Putzen",
+          "Allein die Verdauung des Mittagessens"
+        ],
+        correct: 0,
+        explanation: "Diese lebenswichtigen Vorgänge laufen auch dann weiter, wenn Frau Hakle vollständig ruht."
+      },
+      {
+        type: "choice",
+        question: "Was bedeutet die Angabe «Grundumsatz ca. 1’550 kcal» im Fall?",
+        answers: [
+          "So viel sollte Frau Hakle bei jeder Mahlzeit essen.",
+          "Diesen ungefähren Energiebedarf hat ihr Körper pro Tag bereits in Ruhe.",
+          "So viel verbraucht sie ausschliesslich bei der Büroarbeit.",
+          "Das ist ihr Gesamtumsatz für eine ganze Woche."
+        ],
+        correct: 1,
+        explanation: "Die 1’550 kcal sind ein geschätzter Tageswert für den Energiebedarf ihres Körpers in Ruhe."
+      },
+      {
+        type: "choice",
+        question: "Was ist der Leistungsumsatz?",
+        answers: [
+          "Die Energie, die zusätzlich zum Grundumsatz durch körperliche und geistige Aktivität benötigt wird.",
+          "Die Energie, die der Körper ausschliesslich im Schlaf benötigt.",
+          "Ein anderes Wort für den BMI.",
+          "Die gesamte Energieaufnahme durch Getränke."
+        ],
+        correct: 0,
+        explanation: "Aktivitäten im Beruf und Alltag sowie Sport erhöhen den Energiebedarf über den Grundumsatz hinaus."
+      },
+      {
+        type: "choice",
+        question: "Welche Veränderung würde den Leistungsumsatz von Frau Hakle wahrscheinlich erhöhen?",
+        answers: [
+          "Sie legt mehr Wege zu Fuss zurück und bewegt sich regelmässig.",
+          "Sie schläft länger und bewegt sich weniger.",
+          "Sie trinkt mehr Wasser, bleibt aber gleich aktiv.",
+          "Sie sitzt während der Arbeit noch häufiger."
+        ],
+        correct: 0,
+        explanation: "Mehr körperliche Aktivität erhöht den Leistungsumsatz."
+      },
+      {
+        type: "choice",
+        question: "Welche Formel ist für den Gesamtumsatz richtig?",
+        answers: [
+          "Gesamtumsatz = Grundumsatz + Leistungsumsatz",
+          "Gesamtumsatz = Grundumsatz − Leistungsumsatz",
+          "Gesamtumsatz = Körpergewicht × Körpergrösse",
+          "Gesamtumsatz = Energieaufnahme + BMI"
+        ],
+        correct: 0,
+        explanation: "Der gesamte Energieverbrauch eines Tages setzt sich aus Grundumsatz und Leistungsumsatz zusammen."
+      },
+      {
+        type: "number",
+        question: "Berechne den geschätzten Gesamtumsatz von Frau Hakle.",
+        correct: 2250,
+        tolerance: 1,
+        unit: "kcal",
+        placeholder: "Gesamtumsatz eintragen",
+        explanation: "1’550 kcal Grundumsatz + 700 kcal Leistungsumsatz = 2’250 kcal Gesamtumsatz."
+      },
+      {
+        type: "number",
+        question: "Um wie viele Kilokalorien liegt ihre tägliche Energieaufnahme über dem Gesamtumsatz?",
+        correct: 250,
+        tolerance: 1,
+        unit: "kcal",
+        placeholder: "Differenz eintragen",
+        explanation: "2’500 kcal Energieaufnahme − 2’250 kcal Gesamtumsatz = 250 kcal Überschuss."
+      },
+      {
+        type: "choice",
+        question: "Was bedeutet diese positive Energiebilanz, wenn sie über längere Zeit bestehen bleibt?",
+        answers: [
+          "Frau Hakle nimmt tendenziell an Gewicht zu.",
+          "Frau Hakle nimmt automatisch ab.",
+          "Ihr Grundumsatz fällt sofort auf null.",
+          "Die Energiebilanz hat keinen Zusammenhang mit dem Gewicht."
+        ],
+        correct: 0,
+        explanation: "Energie, die dauerhaft über den Bedarf hinaus aufgenommen wird, kann als Körperfett gespeichert werden."
+      },
+      {
+        type: "choice",
+        question: "Welche Angaben werden für die Berechnung des BMI benötigt?",
+        answers: [
+          "Körpergewicht und Körpergrösse",
+          "Alter und Blutdruck",
+          "Grundumsatz und Leistungsumsatz",
+          "Puls und Körpertemperatur"
+        ],
+        correct: 0,
+        explanation: "Für die BMI-Formel werden das Gewicht in Kilogramm und die Körpergrösse in Metern verwendet."
+      },
+      {
+        type: "choice",
+        question: "Welche Formel berechnet den BMI richtig?",
+        answers: [
+          "Gewicht in kg ÷ Körpergrösse in m",
+          "Gewicht in kg ÷ (Körpergrösse in m)²",
+          "Körpergrösse in cm ÷ Gewicht in kg",
+          "Grundumsatz ÷ Leistungsumsatz"
+        ],
+        correct: 1,
+        explanation: "BMI = Körpergewicht in Kilogramm geteilt durch die Körpergrösse in Metern zum Quadrat."
+      },
+      {
+        type: "number",
+        question: "Berechne den BMI von Frau Hakle. Runde auf eine Nachkommastelle.",
+        correct: 29.4,
+        tolerance: 0.15,
+        unit: "kg/m²",
+        placeholder: "BMI auf eine Nachkommastelle",
+        helper: true,
+        explanation: "82 kg ÷ (1,67 m × 1,67 m) ergibt gerundet einen BMI von 29,4 kg/m²."
+      },
+      {
+        type: "choice",
+        question: "Wie wird der BMI von rund 29,4 bei Frau Hakle eingeordnet?",
+        answers: [
+          "Untergewicht",
+          "Normalgewicht",
+          "Übergewicht",
+          "Der BMI kann grundsätzlich nicht eingeordnet werden."
+        ],
+        correct: 2,
+        explanation: "Der Wert liegt über dem Normalbereich. Das USZ nennt für Frauen von 18 bis 24,9 den Normalbereich; 29,4 wird als Übergewicht eingeordnet."
+      },
+      {
+        type: "choice",
+        question: "Welche wichtige Einschränkung hat der BMI?",
+        answers: [
+          "Er berücksichtigt die Verteilung von Muskel- und Fettgewebe nicht ausreichend.",
+          "Er kann nur bei Kindern angewendet werden.",
+          "Er benötigt zwingend den täglichen Leistungsumsatz.",
+          "Er misst direkt den Blutzucker."
+        ],
+        correct: 0,
+        explanation: "Der BMI ist ein grober Richtwert. Körperbau, Muskelmasse und Fettverteilung müssen zusätzlich berücksichtigt werden."
+      },
+      {
+        type: "choice",
+        question: "Welche Schlussfolgerung passt am besten zur gesamten Fallsituation?",
+        answers: [
+          "Frau Hakle sollte noch mehr Energie aufnehmen, obwohl sie bereits mehr isst als sie verbraucht.",
+          "Frau Hakle sollte ihre Energieaufnahme eher etwas reduzieren und/oder ihren Energieverbrauch durch Bewegung erhöhen.",
+          "Frau Hakle sollte grundsätzlich weniger als ihren Grundumsatz essen.",
+          "Allein der BMI beweist, dass eine strenge Diät notwendig ist."
+        ],
+        correct: 1,
+        explanation: "Im Fall liegt die Energieaufnahme über dem Gesamtumsatz und der BMI im Bereich Übergewicht. Sinnvoll ist eine moderate, nachhaltige Anpassung statt einer strengen Diät. Der Grundumsatz sollte nicht eigenmächtig unterschritten werden; eine individuelle Beratung kann hilfreich sein."
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const questionArea = document.getElementById("question-area");
+    const questionElement = document.getElementById("question");
+    const answersElement = document.getElementById("answers");
+    const numberArea = document.getElementById("number-area");
+    const numberInput = document.getElementById("number-input");
+    const unitElement = document.getElementById("unit");
+    const helperLink = document.getElementById("helper-link");
+    const counterElement = document.getElementById("counter");
+    const pointsElement = document.getElementById("points");
+    const feedbackElement = document.getElementById("feedback");
+    const nextButton = document.getElementById("next");
+    const progressElement = document.getElementById("progress");
+    const resultElement = document.getElementById("result");
+
+    function showQuestion() {
+      answered = false;
+      const item = questions[current];
+
+      counterElement.textContent = `Frage ${current + 1} von ${questions.length}`;
+      pointsElement.textContent = `${score} ${score === 1 ? "Punkt" : "Punkte"}`;
+      questionElement.textContent = item.question;
+      progressElement.style.width = `${(current / questions.length) * 100}%`;
+      answersElement.innerHTML = "";
+      numberArea.className = "number-area";
+      helperLink.className = "helper-link";
+      feedbackElement.className = "feedback";
+      feedbackElement.innerHTML = "";
+      nextButton.className = "next";
+
+      if (item.type === "choice") {
+        item.answers.forEach((answer, index) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "answer";
+          button.textContent = answer;
+          button.addEventListener("click", () => selectChoice(index));
+          answersElement.appendChild(button);
+        });
+      } else {
+        numberArea.classList.add("show");
+        numberInput.value = "";
+        numberInput.disabled = false;
+        numberInput.placeholder = item.placeholder || "Ergebnis eintragen";
+        unitElement.textContent = item.unit || "";
+        document.getElementById("check-number").disabled = false;
+        if (item.helper) helperLink.classList.add("show");
+        setTimeout(() => numberInput.focus(), 0);
+      }
+    }
+
+    function finishAnswer(isCorrect, explanation) {
+      if (isCorrect) score += 1;
+      pointsElement.textContent = `${score} ${score === 1 ? "Punkt" : "Punkte"}`;
+      feedbackElement.innerHTML = `<strong>${isCorrect ? "Richtig!" : "Noch nicht ganz."}</strong>${explanation}`;
+      feedbackElement.classList.add("show");
+      nextButton.textContent = current === questions.length - 1 ? "Ergebnis anzeigen" : "Nächste Frage";
+      nextButton.classList.add("show");
+      nextButton.focus();
+    }
+
+    function selectChoice(selectedIndex) {
+      if (answered) return;
+      answered = true;
+      const item = questions[current];
+      const buttons = [...answersElement.querySelectorAll("button")];
+      const isCorrect = selectedIndex === item.correct;
+
+      buttons.forEach((button, index) => {
+        button.disabled = true;
+        if (index === item.correct) button.classList.add("correct");
+        if (index === selectedIndex && !isCorrect) button.classList.add("wrong");
+      });
+
+      finishAnswer(isCorrect, item.explanation);
+    }
+
+    function parseNumber(value) {
+      return Number(value.trim().replace(/['’\s]/g, "").replace(",", "."));
+    }
+
+    function checkNumber() {
+      if (answered) return;
+      const value = parseNumber(numberInput.value);
+      if (!Number.isFinite(value) || numberInput.value.trim() === "") {
+        feedbackElement.innerHTML = "<strong>Bitte gib zuerst eine Zahl ein.</strong>Du kannst ein Komma oder einen Punkt verwenden.";
+        feedbackElement.classList.add("show");
+        numberInput.focus();
+        return;
+      }
+
+      answered = true;
+      const item = questions[current];
+      const isCorrect = Math.abs(value - item.correct) <= item.tolerance;
+      numberInput.disabled = true;
+      document.getElementById("check-number").disabled = true;
+      numberInput.style.borderColor = isCorrect ? "var(--correct)" : "var(--wrong)";
+      numberInput.style.background = isCorrect ? "#e6f5ec" : "#fdebea";
+      finishAnswer(isCorrect, item.explanation);
+    }
+
+    document.getElementById("check-number").addEventListener("click", checkNumber);
+    numberInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") checkNumber();
+    });
+
+    nextButton.addEventListener("click", () => {
+      if (current < questions.length - 1) {
+        current += 1;
+        numberInput.style.borderColor = "";
+        numberInput.style.background = "";
+        showQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    function showResult() {
+      questionArea.style.display = "none";
+      resultElement.classList.add("show");
+      progressElement.style.width = "100%";
+
+      const percent = Math.round((score / questions.length) * 100);
+      document.getElementById("final-score").textContent = `${score}/${questions.length}`;
+
+      let title = "Einige Inhalte solltest du nochmals anschauen.";
+      let text = `Du hast ${percent} % erreicht. Nutze die Fallsituation und die beiden Quellen für eine Wiederholung.`;
+      if (percent >= 80) {
+        title = "Sehr gut!";
+        text = `Du hast ${percent} % erreicht und kannst Energieumsatz, Energiebilanz und BMI auf die Fallsituation anwenden.`;
+      } else if (percent >= 60) {
+        title = "Gut gemacht!";
+        text = `Du hast ${percent} % erreicht. Einzelne Berechnungen oder Begriffe kannst du noch kurz wiederholen.`;
+      }
+
+      document.getElementById("result-title").textContent = title;
+      document.getElementById("result-text").textContent = text;
+    }
+
+    document.getElementById("restart").addEventListener("click", () => {
+      current = 0;
+      score = 0;
+      answered = false;
+      resultElement.classList.remove("show");
+      questionArea.style.display = "block";
+      numberInput.style.borderColor = "";
+      numberInput.style.background = "";
+      showQuestion();
+    });
+
+    showQuestion();
+  </script>
+</body>
+</html>
