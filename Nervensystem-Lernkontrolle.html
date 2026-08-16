@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173b57">
+  <title>Lernkontrolle Nervensystem</title>
+  <style>
+    :root {
+      --navy: #173b57;
+      --blue: #176c9e;
+      --gold: #e2a500;
+      --berry: #a9154d;
+      --ink: #18232d;
+      --muted: #5c6872;
+      --line: #d6dee3;
+      --paper: #fff;
+      --ground: #f2f5f7;
+      --good: #147a42;
+      --bad: #ba2f2f;
+      --shadow: 0 10px 34px rgba(23,59,87,.10);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--ground);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    button, a { font: inherit; -webkit-tap-highlight-color: transparent; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      color: white;
+      background: linear-gradient(118deg, var(--navy), #205d7d 68%, #2b6f70);
+      box-shadow: 0 5px 20px rgba(23,59,87,.18);
+    }
+    .masthead {
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 14px 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+    .masthead h1 { margin: 0; font-size: clamp(1.08rem, 2.1vw, 1.45rem); letter-spacing: -.01em; }
+    .masthead p { margin: 1px 0 0; opacity: .78; font-size: .82rem; }
+    .progress { min-width: 170px; text-align: right; }
+    .progress span { display: block; margin-bottom: 4px; font-size: .76rem; }
+    .track { height: 7px; overflow: hidden; background: rgba(255,255,255,.22); border-radius: 999px; }
+    .bar { width: 0; height: 100%; background: #ffd861; transition: width .25s ease; }
+
+    .tabs {
+      width: min(1160px, 100%);
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+    .tab {
+      flex: 0 0 auto;
+      padding: 11px 15px 10px;
+      color: rgba(255,255,255,.78);
+      background: transparent;
+      border: 0;
+      border-bottom: 4px solid transparent;
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .tab:hover { color: white; background: rgba(255,255,255,.07); }
+    .tab.active { color: white; border-bottom-color: #ffd861; background: rgba(255,255,255,.09); }
+
+    main { width: min(1040px, calc(100% - 28px)); margin: 28px auto 52px; }
+    .page { display: none; animation: appear .22s ease-out; }
+    .page.active { display: block; }
+    @keyframes appear { from { opacity: .2; transform: translateY(5px); } }
+
+    .hero, .card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .hero { padding: clamp(22px, 4vw, 40px); margin-bottom: 22px; border-top: 7px solid var(--gold); }
+    .eyebrow { margin: 0 0 3px; color: var(--berry); font-weight: 800; font-size: .82rem; letter-spacing: .07em; text-transform: uppercase; }
+    h2 { margin: 0; color: var(--navy); font-size: clamp(2rem, 5vw, 3.25rem); line-height: 1.06; letter-spacing: -.035em; }
+    .subtitle { margin: 10px 0 0; color: var(--muted); }
+    .card { padding: clamp(18px, 3vw, 30px); margin-top: 22px; }
+    .card h3 { margin: 0 0 8px; color: var(--navy); font-size: 1.3rem; }
+
+    .neuron-image { display: block; width: min(100%, 820px); height: auto; margin: 16px auto 24px; border-radius: 12px; background: white; }
+    .matching-layout { display: grid; grid-template-columns: minmax(220px, .8fr) minmax(0, 1.5fr); gap: 20px; align-items: start; }
+    .panel { padding: 15px; background: #f7fafb; border: 1px solid var(--line); border-radius: 13px; }
+    .panel h3 { margin-bottom: 4px; font-size: 1.05rem; }
+    .panel p { margin: 0 0 12px; color: var(--muted); font-size: .88rem; }
+    .term-bank { display: flex; flex-wrap: wrap; gap: 9px; min-height: 60px; }
+    .term-chip {
+      padding: 9px 11px;
+      color: var(--navy);
+      background: white;
+      border: 1.5px solid #9eb2c0;
+      border-radius: 9px;
+      cursor: grab;
+      font-weight: 700;
+      text-align: left;
+    }
+    .term-chip:hover, .term-chip.selected { color: white; background: var(--blue); border-color: var(--blue); }
+    .term-chip:active { cursor: grabbing; }
+    .empty-bank { color: var(--good); font-weight: 700; }
+
+    .targets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .drop-target {
+      min-height: 58px;
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      align-items: stretch;
+      overflow: hidden;
+      color: var(--ink);
+      background: white;
+      border: 1.5px dashed #9eb2c0;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+    .drop-target .number { display: grid; place-items: center; color: white; background: var(--navy); font-weight: 850; }
+    .drop-target .assigned { display: flex; align-items: center; padding: 9px 11px; }
+    .drop-target .placeholder { color: #81909a; font-weight: 600; }
+    .drop-target.dragover { background: #e8f3f9; border-color: var(--blue); }
+    .drop-target.good { background: #edf9f1; border-style: solid; border-color: var(--good); }
+    .drop-target.good .number { background: var(--good); }
+    .drop-target.bad { background: #fff1f1; border-style: solid; border-color: var(--bad); }
+    .drop-target.bad .number { background: var(--bad); }
+
+    .statement-bank { display: grid; gap: 9px; min-height: 100px; }
+    .statement-card {
+      width: 100%;
+      padding: 10px 12px;
+      color: var(--ink);
+      background: white;
+      border: 1.5px solid #9eb2c0;
+      border-radius: 9px;
+      cursor: grab;
+      font-weight: 650;
+      text-align: left;
+    }
+    .statement-card:hover, .statement-card.selected { color: white; background: var(--blue); border-color: var(--blue); }
+    .statement-card.good { color: var(--ink); background: #edf9f1; border-color: var(--good); }
+    .statement-card.bad { color: var(--ink); background: #fff1f1; border-color: var(--bad); }
+    .category-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .category-zone {
+      min-height: 310px;
+      padding: 14px;
+      background: #f7fafb;
+      border: 2px dashed #9eb2c0;
+      border-radius: 13px;
+      cursor: pointer;
+    }
+    .category-zone.dragover { background: #e8f3f9; border-color: var(--blue); }
+    .category-zone h3 { margin: 0 0 2px; }
+    .category-zone > p { margin: 0 0 12px; color: var(--muted); font-size: .84rem; }
+    .assigned-statements { display: grid; gap: 8px; }
+    .zone-placeholder { padding: 18px 10px; color: #81909a; text-align: center; font-weight: 650; }
+
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 18px; }
+    .button { display: inline-block; padding: 10px 15px; border: 0; border-radius: 10px; cursor: pointer; font-weight: 750; text-decoration: none; }
+    .button.primary { color: white; background: var(--navy); }
+    .button.primary:hover { background: #205875; }
+    .button.secondary { color: var(--navy); background: #e8eff3; }
+    .button.secondary:hover { background: #dbe6ec; }
+    .button.external { color: white; background: var(--berry); }
+    .button[disabled] { opacity: .35; cursor: default; }
+    .result { min-height: 1.4em; font-weight: 800; }
+    .result.perfect { color: var(--good); }
+    .result.incomplete { color: var(--bad); }
+    .save-note { margin: 13px 0 0; color: var(--muted); font-size: .86rem; }
+
+    .export-panel { margin-top: 22px; padding: 18px; background: #edf4f8; border: 1px solid #cbdce6; border-radius: 13px; }
+    .export-panel h3 { margin: 0 0 4px; color: var(--navy); font-size: 1.12rem; }
+    .export-panel p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .export-panel .actions { margin-top: 13px; }
+
+    .app-card { padding: 0; }
+    .app-toolbar { padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; gap: 14px; background: white; border-bottom: 1px solid var(--line); }
+    .app-toolbar p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .app-frame-wrap { position: relative; min-height: 680px; background: #e9eef1; }
+    .app-frame { display: block; width: 100%; height: 720px; border: 0; background: white; }
+    .app-fallback { padding: 11px 18px; color: var(--muted); background: #f7fafb; border-top: 1px solid var(--line); font-size: .84rem; }
+
+    .page-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; }
+    footer { margin-top: 26px; color: var(--muted); text-align: center; font-size: .83rem; }
+
+    @media (max-width: 720px) {
+      .masthead { width: calc(100% - 24px); }
+      .progress { min-width: 130px; }
+      main { width: min(100% - 20px, 1040px); margin-top: 16px; }
+      .hero, .card { border-radius: 14px; }
+      .matching-layout { grid-template-columns: 1fr; }
+      .targets { grid-template-columns: 1fr; }
+      .category-grid { grid-template-columns: 1fr; }
+      .category-zone { min-height: 230px; }
+      .app-toolbar { align-items: flex-start; flex-direction: column; }
+      .app-frame { height: 680px; }
+      .tab { padding-inline: 12px; }
+    }
+
+    @media print {
+      body { background: white; }
+      .topbar, .page-nav, .actions, .export-panel, footer { display: none !important; }
+      main { width: 100%; margin: 0; }
+      .page { display: none !important; }
+      .page.active { display: block !important; }
+      .hero, .card { box-shadow: none; border-color: #bbb; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="masthead">
+      <div><h1>Lernkontrolle Nervensystem</h1><p>Modul AGS zu FaGe</p></div>
+      <div class="progress"><span id="progressText">0 von 8 Begriffen zugeordnet</span><div class="track"><div class="bar" id="progressBar"></div></div></div>
+    </div>
+    <nav class="tabs" aria-label="Seiten">
+      <button class="tab" type="button" data-tab="0">Lernkontrolle Anatomie</button>
+      <button class="tab" type="button" data-tab="1">ZNS und PNS</button>
+      <button class="tab" type="button" data-tab="2">Nervensystem – Übersicht</button>
+      <button class="tab" type="button" data-tab="3">Sympathikus &amp; Parasympathikus</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page" id="page-anatomie" data-page="anatomie">
+      <header class="hero">
+        <p class="eyebrow">Lernkontrolle</p>
+        <h2>Anatomie der Nervenzelle</h2>
+        <p class="subtitle">Ordnen Sie die acht Fachbegriffe den richtigen Nummern auf dem Neuron zu.</p>
+      </header>
+      <article class="card">
+        <img class="neuron-image" src="data:image/jpeg;base64,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0y6tNGgnWe5uLtNhk28hVX6969Nq8DSlSoqM9wk7sxNI/wCRj8Q/9dof/RK1t1iaR/yMfiH/AK7Q/wDola267CQrE0z/AJGrXf8Adt//AEBq26xNM/5GrXf923/9AagDbooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigDE8Hf8ifpX/XutbdYng7/kT9K/691rboAKKKKACiiigDE8Jf8i9H/wBfFz/6PetusTwl/wAi9H/18XP/AKPetugArE8P/wDH94g/7CR/9ExVt1ieH/8Aj+8Qf9hI/wDomKgDbooooAKKKKACsTQ/+Q14l/7CEf8A6SwVt1iaH/yGvEv/AGEI/wD0lgoA26KKKACiiigAooooAKKKKACsTXf+Qx4Z/wCwk/8A6SXFbdYmu/8AIY8M/wDYSf8A9JLigDbooooAxPEH/H94f/7CQ/8ARMtbdYniD/j+8P8A/YSH/omWtugAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooA5X4g6NPrHhhms1zfWcqXVuB1LIc4/EZrmrjx6+uadFpnh+1uH1u4Xy5VaMqtqejFifSvT6YkMUbs6RorN1IUAmsatCFVpzWw02jJ8L6BB4a0GDT4juZcvLIeskh5Zj+NbNFFbCCggEYIzRRQAAADAooooAxNI/5GPxD/wBdof8A0StbdYmkf8jH4h/67Q/+iVrboAKxNM/5GrXf923/APQGrbrE0z/katd/3bf/ANAagDbooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiijpQBl+G7Oew8N2Fpcx+XPDCFdcg4P1HFalMiljmjEkUiuh6MpyD+NPoAKKKKACiiigDL8O2c9jo629zHskE0zbcg8NK7Dp7EVqVWTULKS6a2S7ga4XrEsgLj8M5qzQAVlaPZz2t3rDzJtW4vjNEcg7l8qNc+3KmtUkAEk4AqC3vrS7Z1trqGZkOGEcgbb9cdKAJ6KKKACiiigArK0qznttU1yaVNsdzeJLEcg7lEESE+3zIw/CtWmu6xozuyqijJZjgAUAOopsciSxrJG6ujDKspyCPUGnUAFFFFABRRRQAUUUUAFZWrWk9zqOhzRJuS1vmlmOQNqm3mTPv8zqOPWtWq11qFlYlRd3lvb7vu+bIE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" alt="Nervenzelle mit den Nummern 1 bis 8">
+        <div class="matching-layout">
+          <section class="panel">
+            <h3>Begriffe</h3>
+            <p>Ziehen Sie einen Begriff zur passenden Nummer. Auf einem Touchscreen können Sie zuerst den Begriff und danach die Nummer antippen.</p>
+            <div class="term-bank" id="termBank"></div>
+          </section>
+          <section class="panel">
+            <h3>Nummern auf dem Neuron</h3>
+            <p>Ein bereits zugeordneter Begriff kann durch Antippen wieder entfernt werden.</p>
+            <div class="targets" id="targets"></div>
+          </section>
+        </div>
+        <div class="actions">
+          <button class="button primary" type="button" id="checkAnswers">Automatisch korrigieren</button>
+          <button class="button secondary" type="button" id="resetAnswers">Zuordnungen zurücksetzen</button>
+          <span class="result" id="result" aria-live="polite"></span>
+        </div>
+        <p class="save-note">Die Zuordnungen werden automatisch auf diesem Gerät gespeichert.</p>
+      </article>
+      <section class="export-panel">
+        <h3>Ergebnis speichern</h3>
+        <p>Speichern Sie Ihre Zuordnungen und die Auswertung als PDF oder Textdatei.</p>
+        <div class="actions"><button class="button primary" type="button" id="savePdf">Als PDF speichern</button><button class="button secondary" type="button" id="saveText">Als Textdatei speichern</button></div>
+      </section>
+      <nav class="page-nav"><button class="button secondary" type="button" disabled>Zurück</button><button class="button primary" type="button" data-go="1">Nächste Seite</button></nav>
+    </section>
+
+    <section class="page" id="page-app1" data-page="app1">
+      <header class="hero"><p class="eyebrow">Eigene Zuordnungsübung</p><h2>Zentrales und peripheres Nervensystem</h2><p class="subtitle">Ordnen Sie die Bestandteile und Aufgaben dem ZNS oder PNS zu.</p></header>
+      <article class="card">
+        <div class="panel">
+          <h3>Noch nicht zugeordnete Aussagen</h3>
+          <p>Ziehen Sie eine Aussage in den passenden Bereich. Auf einem Touchscreen können Sie zuerst die Aussage und danach ZNS oder PNS antippen.</p>
+          <div class="statement-bank" id="znsPnsBank"></div>
+        </div>
+        <div class="category-grid" style="margin-top:16px">
+          <section class="category-zone" data-category="ZNS">
+            <h3>Zentrales Nervensystem (ZNS)</h3>
+            <p>Gehirn und Rückenmark</p>
+            <div class="assigned-statements" id="znsZone"></div>
+          </section>
+          <section class="category-zone" data-category="PNS">
+            <h3>Peripheres Nervensystem (PNS)</h3>
+            <p>Nervenstrukturen ausserhalb von Gehirn und Rückenmark</p>
+            <div class="assigned-statements" id="pnsZone"></div>
+          </section>
+        </div>
+        <div class="actions">
+          <button class="button primary" type="button" id="checkZnsPns">Automatisch korrigieren</button>
+          <button class="button secondary" type="button" id="resetZnsPns">Zuordnungen zurücksetzen</button>
+          <span class="result" id="znsPnsResult" aria-live="polite"></span>
+        </div>
+        <p class="save-note">Die Zuordnungen werden automatisch auf diesem Gerät gespeichert.</p>
+      </article>
+      <section class="export-panel">
+        <h3>Ergebnis speichern</h3>
+        <p>Speichern Sie Ihre Zuordnungen und die Auswertung als PDF oder Textdatei.</p>
+        <div class="actions"><button class="button primary" type="button" id="saveZnsPdf">Als PDF speichern</button><button class="button secondary" type="button" id="saveZnsText">Als Textdatei speichern</button></div>
+      </section>
+      <nav class="page-nav"><button class="button secondary" type="button" data-go="0">Zurück</button><button class="button primary" type="button" data-go="2">Nächste Seite</button></nav>
+    </section>
+
+    <section class="page" id="page-app2" data-page="app2">
+      <header class="hero"><p class="eyebrow">LearningApp</p><h2>Das Nervensystem in der Übersicht</h2><p class="subtitle">ZNS, PNS sowie sensorische, motorische, somatische und vegetative Anteile.</p></header>
+      <article class="card app-card">
+        <div class="app-toolbar"><p>Die interaktive Übung wird direkt von LearningApps geladen.</p><a class="button external" href="https://learningapps.org/view36439061" target="_blank" rel="noopener">In neuem Fenster öffnen</a></div>
+        <div class="app-frame-wrap"><iframe class="app-frame" data-app-src="https://learningapps.org/show.php?id=pmtbu4wen24" title="Das Nervensystem in der Übersicht" allow="fullscreen; autoplay; clipboard-write" allowfullscreen></iframe></div>
+        <div class="app-fallback">Falls die Übung innerhalb von Wix oder auf einem Smartphone nicht vollständig angezeigt wird, öffnen Sie sie über den Button in einem eigenen Fenster.</div>
+      </article>
+      <nav class="page-nav"><button class="button secondary" type="button" data-go="1">Zurück</button><button class="button primary" type="button" data-go="3">Nächste Seite</button></nav>
+    </section>
+
+    <section class="page" id="page-app3" data-page="app3">
+      <header class="hero"><p class="eyebrow">LearningApp</p><h2>Sympathikus und Parasympathikus</h2><p class="subtitle">Ordnen Sie die Anpassungen und Beschreibungen richtig zu.</p></header>
+      <article class="card app-card">
+        <div class="app-toolbar"><p>Die interaktive Übung wird direkt von LearningApps geladen.</p><a class="button external" href="https://learningapps.org/view36439132" target="_blank" rel="noopener">In neuem Fenster öffnen</a></div>
+        <div class="app-frame-wrap"><iframe class="app-frame" data-app-src="https://learningapps.org/show.php?id=p46ft6eo524" title="Sympathikus und Parasympathikus" allow="fullscreen; autoplay; clipboard-write" allowfullscreen></iframe></div>
+        <div class="app-fallback">Falls die Übung innerhalb von Wix oder auf einem Smartphone nicht vollständig angezeigt wird, öffnen Sie sie über den Button in einem eigenen Fenster.</div>
+      </article>
+      <nav class="page-nav"><button class="button secondary" type="button" data-go="2">Zurück</button><button class="button primary" type="button" disabled>Nächste Seite</button></nav>
+    </section>
+
+    <footer>Lernkontrolle Nervensystem · Modul AGS zu FaGe</footer>
+  </main>
+
+  <script>
+    const terms = [
+      'Dendrit',
+      'Zellkörper (Soma)',
+      'Zellkern',
+      'Axon (Neurit)',
+      'Myelinscheide',
+      'Ranvierscher Schnürring',
+      'Endverzweigungen des Axons',
+      'synaptisches Endknöpfchen'
+    ];
+    const znsPnsItems = [
+      { id: 'brain', text: 'Gehirn', category: 'ZNS' },
+      { id: 'spinal-cord', text: 'Rückenmark', category: 'ZNS' },
+      { id: 'protected', text: 'Liegt geschützt im Schädel und im Wirbelkanal', category: 'ZNS' },
+      { id: 'processes', text: 'Verarbeitet und integriert eintreffende Informationen', category: 'ZNS' },
+      { id: 'motor-output', text: 'Plant und erzeugt passende motorische Antworten', category: 'ZNS' },
+      { id: 'reflexes', text: 'Im Rückenmark können einfache Reflexe verschaltet werden', category: 'ZNS' },
+      { id: 'outside', text: 'Umfasst Nervenstrukturen ausserhalb von Gehirn und Rückenmark', category: 'PNS' },
+      { id: 'spinal-nerves', text: '31 Paare von Spinalnerven', category: 'PNS' },
+      { id: 'connection', text: 'Verbindet das ZNS mit dem übrigen Körper', category: 'PNS' },
+      { id: 'sensory', text: 'Sensorische beziehungsweise afferente Bahnen leiten Informationen zum ZNS', category: 'PNS' },
+      { id: 'motor', text: 'Motorische beziehungsweise efferente Bahnen leiten Befehle vom ZNS zu Muskeln und Drüsen', category: 'PNS' }
+    ];
+    const storageKey = 'nervensystem-lernkontrolle-v1';
+    const znsStorageKey = 'nervensystem-zns-pns-v1';
+    let assignments = Array(8).fill(null);
+    let selectedTerm = null;
+    let znsAssignments = {};
+    let selectedStatement = null;
+    try {
+      const stored = JSON.parse(localStorage.getItem(storageKey) || 'null');
+      if (Array.isArray(stored) && stored.length === 8) assignments = stored;
+    } catch (_) {}
+    try {
+      const storedZns = JSON.parse(localStorage.getItem(znsStorageKey) || '{}');
+      if (storedZns && typeof storedZns === 'object' && !Array.isArray(storedZns)) {
+        znsAssignments = Object.fromEntries(Object.entries(storedZns).filter(([id, category]) =>
+          znsPnsItems.some(item => item.id === id) && ['ZNS', 'PNS'].includes(category)
+        ));
+      }
+    } catch (_) {}
+
+    function persist() {
+      try { localStorage.setItem(storageKey, JSON.stringify(assignments)); } catch (_) {}
+    }
+
+    function unusedTerms() {
+      return terms.filter(term => !assignments.includes(term));
+    }
+
+    function render() {
+      const available = unusedTerms();
+      document.getElementById('termBank').innerHTML = available.length
+        ? available.map(term => `<button class="term-chip ${selectedTerm === term ? 'selected' : ''}" type="button" draggable="true" data-term="${term}">${term}</button>`).join('')
+        : '<span class="empty-bank">Alle Begriffe sind zugeordnet.</span>';
+
+      document.getElementById('targets').innerHTML = assignments.map((term, index) => `
+        <button class="drop-target" type="button" data-target="${index}" aria-label="Nummer ${index + 1}: ${term || 'nicht zugeordnet'}">
+          <span class="number">${index + 1}</span>
+          <span class="assigned ${term ? '' : 'placeholder'}">${term || 'Begriff hier ablegen'}</span>
+        </button>`).join('');
+
+      document.querySelectorAll('[data-term]').forEach(chip => {
+        chip.addEventListener('click', () => { selectedTerm = chip.dataset.term; render(); });
+        chip.addEventListener('dragstart', event => { event.dataTransfer.setData('text/plain', chip.dataset.term); event.dataTransfer.effectAllowed = 'move'; });
+      });
+      document.querySelectorAll('[data-target]').forEach(target => {
+        target.addEventListener('dragover', event => { event.preventDefault(); target.classList.add('dragover'); });
+        target.addEventListener('dragleave', () => target.classList.remove('dragover'));
+        target.addEventListener('drop', event => { event.preventDefault(); assignTerm(Number(target.dataset.target), event.dataTransfer.getData('text/plain')); });
+        target.addEventListener('click', () => {
+          const index = Number(target.dataset.target);
+          if (selectedTerm) assignTerm(index, selectedTerm);
+          else if (assignments[index]) { assignments[index] = null; persist(); clearResult(); render(); updateProgress(); }
+        });
+      });
+    }
+
+    function assignTerm(index, term) {
+      if (!terms.includes(term)) return;
+      assignments = assignments.map(value => value === term ? null : value);
+      assignments[index] = term;
+      selectedTerm = null;
+      persist();
+      clearResult();
+      render();
+      updateProgress();
+    }
+
+    function clearResult() {
+      const result = document.getElementById('result');
+      result.textContent = '';
+      result.className = 'result';
+    }
+
+    function persistZns() {
+      try { localStorage.setItem(znsStorageKey, JSON.stringify(znsAssignments)); } catch (_) {}
+    }
+
+    function clearZnsResult() {
+      const result = document.getElementById('znsPnsResult');
+      result.textContent = '';
+      result.className = 'result';
+    }
+
+    function renderZnsPns() {
+      const unassigned = znsPnsItems.filter(item => !znsAssignments[item.id]);
+      document.getElementById('znsPnsBank').innerHTML = unassigned.length
+        ? unassigned.map(item => `<button class="statement-card ${selectedStatement === item.id ? 'selected' : ''}" type="button" draggable="true" data-zns-item="${item.id}">${item.text}</button>`).join('')
+        : '<span class="empty-bank">Alle Aussagen sind zugeordnet.</span>';
+
+      for (const category of ['ZNS', 'PNS']) {
+        const assigned = znsPnsItems.filter(item => znsAssignments[item.id] === category);
+        document.getElementById(category === 'ZNS' ? 'znsZone' : 'pnsZone').innerHTML = assigned.length
+          ? assigned.map(item => `<button class="statement-card" type="button" data-zns-assigned="${item.id}">${item.text}</button>`).join('')
+          : '<div class="zone-placeholder">Aussagen hier ablegen</div>';
+      }
+
+      document.querySelectorAll('[data-zns-item]').forEach(card => {
+        card.addEventListener('click', () => { selectedStatement = card.dataset.znsItem; renderZnsPns(); });
+        card.addEventListener('dragstart', event => { event.dataTransfer.setData('text/plain', card.dataset.znsItem); event.dataTransfer.effectAllowed = 'move'; });
+      });
+      document.querySelectorAll('[data-zns-assigned]').forEach(card => card.addEventListener('click', event => {
+        event.stopPropagation();
+        delete znsAssignments[card.dataset.znsAssigned];
+        persistZns();
+        clearZnsResult();
+        renderZnsPns();
+        updateProgress();
+      }));
+      document.querySelectorAll('[data-category]').forEach(zone => {
+        zone.addEventListener('dragover', event => { event.preventDefault(); zone.classList.add('dragover'); });
+        zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+        zone.addEventListener('drop', event => {
+          event.preventDefault();
+          assignZnsPns(event.dataTransfer.getData('text/plain'), zone.dataset.category);
+        });
+        zone.addEventListener('click', () => {
+          if (selectedStatement) assignZnsPns(selectedStatement, zone.dataset.category);
+        });
+      });
+    }
+
+    function assignZnsPns(itemId, category) {
+      if (!znsPnsItems.some(item => item.id === itemId) || !['ZNS', 'PNS'].includes(category)) return;
+      znsAssignments[itemId] = category;
+      selectedStatement = null;
+      persistZns();
+      clearZnsResult();
+      renderZnsPns();
+      updateProgress();
+    }
+
+    document.getElementById('checkAnswers').addEventListener('click', () => {
+      let correct = 0;
+      document.querySelectorAll('[data-target]').forEach((target, index) => {
+        const ok = assignments[index] === terms[index];
+        target.classList.toggle('good', ok);
+        target.classList.toggle('bad', !ok);
+        if (ok) correct++;
+      });
+      const result = document.getElementById('result');
+      result.textContent = `${correct} von ${terms.length} richtig`;
+      result.className = `result ${correct === terms.length ? 'perfect' : 'incomplete'}`;
+      result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    document.getElementById('resetAnswers').addEventListener('click', () => {
+      if (!confirm('Möchten Sie alle Zuordnungen zurücksetzen?')) return;
+      assignments = Array(8).fill(null);
+      selectedTerm = null;
+      persist();
+      clearResult();
+      render();
+      updateProgress();
+    });
+
+    document.getElementById('checkZnsPns').addEventListener('click', () => {
+      let correct = 0;
+      znsPnsItems.forEach(item => {
+        const card = document.querySelector(`[data-zns-assigned="${item.id}"], [data-zns-item="${item.id}"]`);
+        const ok = znsAssignments[item.id] === item.category;
+        if (card) {
+          card.classList.toggle('good', ok);
+          card.classList.toggle('bad', !ok);
+        }
+        if (ok) correct++;
+      });
+      const result = document.getElementById('znsPnsResult');
+      result.textContent = `${correct} von ${znsPnsItems.length} richtig`;
+      result.className = `result ${correct === znsPnsItems.length ? 'perfect' : 'incomplete'}`;
+      result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+
+    document.getElementById('resetZnsPns').addEventListener('click', () => {
+      if (!confirm('Möchten Sie alle ZNS/PNS-Zuordnungen zurücksetzen?')) return;
+      znsAssignments = {};
+      selectedStatement = null;
+      persistZns();
+      clearZnsResult();
+      renderZnsPns();
+      updateProgress();
+    });
+
+    function updateProgress() {
+      if (typeof activeIndex !== 'undefined' && activeIndex === 1) {
+        const count = Object.keys(znsAssignments).length;
+        document.getElementById('progressText').textContent = `${count} von ${znsPnsItems.length} Aussagen zugeordnet`;
+        document.getElementById('progressBar').style.width = `${count / znsPnsItems.length * 100}%`;
+        return;
+      }
+      if (typeof activeIndex !== 'undefined' && activeIndex > 1) {
+        document.getElementById('progressText').textContent = 'LearningApp';
+        document.getElementById('progressBar').style.width = '0%';
+        return;
+      }
+      const count = assignments.filter(Boolean).length;
+      document.getElementById('progressText').textContent = `${count} von ${terms.length} Begriffen zugeordnet`;
+      document.getElementById('progressBar').style.width = `${count / terms.length * 100}%`;
+    }
+
+    const pages = [...document.querySelectorAll('.page')];
+    const tabs = [...document.querySelectorAll('.tab')];
+    const hashes = ['anatomie', 'zns-pns', 'uebersicht', 'sympathikus-parasympathikus'];
+    let activeIndex = Math.max(0, hashes.indexOf(location.hash.slice(1)));
+
+    function showPage(index) {
+      if (index < 0 || index >= pages.length) return;
+      activeIndex = index;
+      pages.forEach((page, i) => page.classList.toggle('active', i === index));
+      tabs.forEach((tab, i) => {
+        tab.classList.toggle('active', i === index);
+        tab.setAttribute('aria-current', i === index ? 'page' : 'false');
+      });
+      const frame = pages[index].querySelector('iframe[data-app-src]');
+      if (frame && !frame.getAttribute('src')) frame.src = frame.dataset.appSrc;
+      history.replaceState(null, '', `#${hashes[index]}`);
+      updateProgress();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    tabs.forEach((tab, index) => tab.addEventListener('click', () => showPage(index)));
+    document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => showPage(Number(button.dataset.go))));
+
+    function safeHtml(value) {
+      return String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+    }
+    function exportEntries() {
+      return terms.map((correct, index) => ({
+        question: `Nummer ${index + 1}`,
+        answer: assignments[index] || 'Keine Antwort eingegeben.',
+        status: assignments[index] ? (assignments[index] === correct ? 'Richtig' : 'Falsch') : 'Nicht beantwortet'
+      }));
+    }
+    function printableHtml() {
+      const entries = exportEntries().map((entry, i) => `<section class="entry"><h2>${i + 1}. ${safeHtml(entry.question)}</h2><p>${safeHtml(entry.answer)}</p><div class="status">Auswertung: ${safeHtml(entry.status)}</div></section>`).join('');
+      return `<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><title>Lernkontrolle Anatomie – Ergebnis</title><style>
+        @page { size: A4; margin: 18mm; } body { max-width: 800px; margin: 0 auto; color: #18232d; font: 11.5pt/1.5 Arial, sans-serif; }
+        header { border-bottom: 3px solid #173b57; padding-bottom: 12px; margin-bottom: 22px; } h1 { margin: 0 0 4px; color: #173b57; font-size: 24pt; }
+        .meta { margin: 0; color: #5c6872; } .entry { break-inside: avoid; margin: 0 0 12px; padding: 12px 14px; border: 1px solid #d7dee3; border-radius: 8px; }
+        .entry h2 { margin: 0 0 6px; color: #173b57; font-size: 12pt; } .entry p { margin: 0; } .status { margin-top: 7px; color: #5c6872; font-weight: bold; font-size: 9.5pt; }
+        .hint { margin-top: 20px; color: #5c6872; font-size: 9pt; } @media print { .hint { display: none; } }
+      </style></head><body><header><h1>Lernkontrolle Anatomie der Nervenzelle</h1><p class="meta">Modul AGS zu FaGe<br>Gespeichert am ${safeHtml(new Date().toLocaleString('de-CH'))}</p></header>${entries}<p class="hint">Wählen Sie im Druckfenster „Als PDF speichern“.</p></body></html>`;
+    }
+    function znsExportEntries() {
+      return znsPnsItems.map(item => ({
+        question: item.text,
+        answer: znsAssignments[item.id] || 'Keine Antwort eingegeben.',
+        status: znsAssignments[item.id] ? (znsAssignments[item.id] === item.category ? 'Richtig' : 'Falsch') : 'Nicht beantwortet'
+      }));
+    }
+    function znsPrintableHtml() {
+      const entries = znsExportEntries().map((entry, i) => `<section class="entry"><h2>${i + 1}. ${safeHtml(entry.question)}</h2><p>Zuordnung: ${safeHtml(entry.answer)}</p><div class="status">Auswertung: ${safeHtml(entry.status)}</div></section>`).join('');
+      return `<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><title>ZNS und PNS – Ergebnis</title><style>
+        @page { size: A4; margin: 18mm; } body { max-width: 800px; margin: 0 auto; color: #18232d; font: 11.5pt/1.5 Arial, sans-serif; }
+        header { border-bottom: 3px solid #173b57; padding-bottom: 12px; margin-bottom: 22px; } h1 { margin: 0 0 4px; color: #173b57; font-size: 24pt; }
+        .meta { margin: 0; color: #5c6872; } .entry { break-inside: avoid; margin: 0 0 12px; padding: 12px 14px; border: 1px solid #d7dee3; border-radius: 8px; }
+        .entry h2 { margin: 0 0 6px; color: #173b57; font-size: 12pt; } .entry p { margin: 0; } .status { margin-top: 7px; color: #5c6872; font-weight: bold; font-size: 9.5pt; }
+        .hint { margin-top: 20px; color: #5c6872; font-size: 9pt; } @media print { .hint { display: none; } }
+      </style></head><body><header><h1>Zentrales und peripheres Nervensystem</h1><p class="meta">Modul AGS zu FaGe<br>Gespeichert am ${safeHtml(new Date().toLocaleString('de-CH'))}</p></header>${entries}<p class="hint">Wählen Sie im Druckfenster „Als PDF speichern“.</p></body></html>`;
+    }
+    document.getElementById('savePdf').addEventListener('click', () => {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) { alert('Das Druckfenster wurde blockiert. Bitte erlauben Sie Pop-ups und versuchen Sie es erneut.'); return; }
+      printWindow.document.open(); printWindow.document.write(printableHtml()); printWindow.document.close(); printWindow.focus(); setTimeout(() => printWindow.print(), 250);
+    });
+    document.getElementById('saveText').addEventListener('click', () => {
+      const lines = ['Lernkontrolle Anatomie der Nervenzelle', `Gespeichert am ${new Date().toLocaleString('de-CH')}`, ''];
+      exportEntries().forEach((entry, i) => lines.push(`${i + 1}. ${entry.question}`, `Antwort: ${entry.answer}`, `Auswertung: ${entry.status}`, ''));
+      const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'lernkontrolle-nervenzelle.txt';
+      document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    document.getElementById('saveZnsPdf').addEventListener('click', () => {
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) { alert('Das Druckfenster wurde blockiert. Bitte erlauben Sie Pop-ups und versuchen Sie es erneut.'); return; }
+      printWindow.document.open(); printWindow.document.write(znsPrintableHtml()); printWindow.document.close(); printWindow.focus(); setTimeout(() => printWindow.print(), 250);
+    });
+    document.getElementById('saveZnsText').addEventListener('click', () => {
+      const lines = ['Zentrales und peripheres Nervensystem', `Gespeichert am ${new Date().toLocaleString('de-CH')}`, ''];
+      znsExportEntries().forEach((entry, i) => lines.push(`${i + 1}. ${entry.question}`, `Zuordnung: ${entry.answer}`, `Auswertung: ${entry.status}`, ''));
+      const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = 'zns-pns-zuordnung.txt';
+      document.body.appendChild(link); link.click(); link.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+
+    render();
+    renderZnsPns();
+    updateProgress();
+    showPage(activeIndex);
+  </script>
+</body>
+</html>
